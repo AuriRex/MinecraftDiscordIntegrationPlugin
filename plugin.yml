@@ -1,0 +1,19 @@
+main: me.auri.discordintegration.Main
+name: DiscordIntegration
+version: 1.0
+author: AuriRex
+api-version: 1.16
+load: STARTUP
+description: Sends Chat into a discord channel and vise versa
+commands:
+  discordintegration:
+    description: DI main command
+    usage: "Usage: /discordintegration help"
+    permission: discordintegration.core
+    permission-message: You don't have permission to do that.
+    aliases: [di, discord]
+  debug:
+    description: Yes, it just works
+    usage: "Usage: /debug ???????"
+    permission: discordintegration.debug
+    permission-message: You don't have permission to do that.
