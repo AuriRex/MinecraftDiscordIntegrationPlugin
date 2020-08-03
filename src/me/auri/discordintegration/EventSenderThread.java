@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -47,7 +49,7 @@ public class EventSenderThread extends Thread {
 
     private boolean running = true;
 
-    private Queue<String> eventList = new LinkedList<>();
+    private Collection<String> eventList = Collections.synchronizedCollection((Queue<String>) (new LinkedList<String>()));
 
     public void sendEvent(String event, String content) {
         System.out.println("Adding to queue: " + event + ": " + content);
@@ -117,7 +119,8 @@ public class EventSenderThread extends Thread {
                     e.printStackTrace();
                 }   
 
-                Iterator<String> it = eventList.iterator();
+
+            	Iterator<String> it = eventList.iterator();
 
                 while(it.hasNext()) {
                     String send = it.next();
@@ -127,7 +130,7 @@ public class EventSenderThread extends Thread {
 
                     it.remove();
                 }
-                   
+                
                 
 
                 // if(eventList.peek() != null) {
@@ -168,11 +171,11 @@ public class EventSenderThread extends Thread {
         }
     }
     
-    public Queue<String> getEventQueue() {
+    public Collection<String> getEventQueue() {
         return eventList;
     }
 
-    public void setEventQueue(Queue<String> q) {
+    public void setEventQueue(Collection<String> q) {
         this.eventList.addAll(q);
     }
 

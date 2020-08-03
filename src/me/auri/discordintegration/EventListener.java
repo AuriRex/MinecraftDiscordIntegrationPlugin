@@ -1,9 +1,12 @@
 package me.auri.discordintegration;
 
+import org.bukkit.Location;
+import org.bukkit.advancement.Advancement;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
@@ -47,8 +50,6 @@ public class EventListener implements Listener {
 		
     }
 	
-	
-	
 	// PlayerLoginEvent
 	
 	@EventHandler
@@ -73,18 +74,19 @@ public class EventListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
-		
-		
-		
+		Location rl = event.getRespawnLocation();
+		if(Core.isEventEnabled("respawn"))
+			Core.sendEvent("PlayerRespawnEvent", event.getPlayer().getName() + ";X:" + rl.getX() + "Y:" + rl.getY() + "Z:" + rl.getZ() + ";" + rl.getWorld().getName());
 	}
 	
 	
 	
 	@EventHandler
 	public void onPlayerTeleport(PlayerTeleportEvent event) {
-		
-		
-		
+		Location tf = event.getFrom();
+		Location tt = event.getTo();
+		if(Core.isEventEnabled("teleport"))
+			Core.sendEvent("PlayerRespawnEvent", event.getPlayer().getName() + ";X:" + tf.getX() + "Y:" + tf.getY() + "Z:" + tf.getZ() + ";" + tf.getWorld().getName() + ";X:" + tt.getX() + "Y:" + tt.getY() + "Z:" + tt.getZ() + ";" + tt.getWorld().getName());
 	}
 	
 	@EventHandler

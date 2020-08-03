@@ -30,7 +30,7 @@ public class Core {
 	private static EventReceiverThread ert;
 
 	public static String getVersion() {
-		return "1.0";
+		return "1.1";
 	}
 
     protected static void onLoad(Main main) {
@@ -65,6 +65,8 @@ public class Core {
 		var.setDefault("discordintegration.event.shutdown", false);
 		var.setDefault("discordintegration.event.command", false);
 		var.setDefault("discordintegration.event.death", true);
+		var.setDefault("discordintegration.event.teleport", false);
+		var.setDefault("discordintegration.event.respawn", false);
 
 		if(config.contains("enable")) {
 			if(!config.getBoolean("enable")) {
@@ -162,7 +164,7 @@ public class Core {
 
 	public static void onDisable() {
 
-		Core.sendEvent("ServerShutdownEvent", "Plugin Disabled");
+		//Core.sendEvent("ServerShutdownEvent", "Plugin Disabled");
 
 		if(est != null) {
 			try {
@@ -201,6 +203,7 @@ public class Core {
 						+" + savevar : save vars to file;"
 						+" + reloadvar : reload vars from file;"
 						+" + reconnect : try to connect to discord;"
+						+" + stopthreads : stops the DiscordIntegration Threads;"
 						+"debug : Prints all vars to the console;";
     	
     	
@@ -261,12 +264,16 @@ public class Core {
 	}
 
 	public static void closeDIThreads() {
-		est.close();
-		ert.close();
+		if(est != null) {
+			est.close();
+		}
+		if(ert != null) {
+			ert.close();
+		}
 	}
 
 	public static void reconnectDIThreads() {
-		Queue<String> events = null;
+		Collection<String> events = null;
 		if(est != null) {
 			events = est.getEventQueue();
 			closeDIThreads();
