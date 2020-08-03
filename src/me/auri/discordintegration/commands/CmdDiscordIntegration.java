@@ -80,6 +80,11 @@ public class CmdDiscordIntegration implements Command {
                 Core.reconnectDIThreads();
                 sender.sendMessage(Core.var.get("discordintegration.plugin.name") + "reconnect attempted! Check Console for more info.");
             }
+            
+            if(args[0].equalsIgnoreCase("stopthreads")) {
+            	sender.sendMessage(Core.var.get("discordintegration.plugin.name") + "Stopping Discord Threads...");
+                Core.closeDIThreads();
+            }
 
         } else {
             if(Core.isNotSetup()) {
