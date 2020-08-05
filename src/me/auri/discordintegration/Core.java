@@ -30,7 +30,7 @@ public class Core {
 	private static EventReceiverThread ert;
 
 	public static String getVersion() {
-		return "1.1";
+		return "1.2.2";
 	}
 
     protected static void onLoad(Main main) {
@@ -58,6 +58,10 @@ public class Core {
 		var.setDefault("discordintegration.bot.encryption", "AES");
 		var.setDefault("discordintegration.bot.enckey", "defaultEncKey");
 		
+		var.setDefault("discordintegration.debug.enable", false);
+		
+		//var.setDefault("discordintegration.event.flags.saycommand.preventdoubleevent", true);
+		
 		var.setDefault("discordintegration.event.chat", true);
 		var.setDefault("discordintegration.event.join", true);
 		var.setDefault("discordintegration.event.leave", true);
@@ -67,6 +71,7 @@ public class Core {
 		var.setDefault("discordintegration.event.death", true);
 		var.setDefault("discordintegration.event.teleport", false);
 		var.setDefault("discordintegration.event.respawn", false);
+		var.setDefault("discordintegration.event.saycommand", true);
 
 		if(config.contains("enable")) {
 			if(!config.getBoolean("enable")) {
@@ -121,7 +126,7 @@ public class Core {
 	private static boolean reconnectAttempt = false;
 
 	public static void sendEvent(String event, String content) {
-		if(isNotSetup()) {
+		if(isNotSetup() || isAboutToDisable) {
 			return;
 		}
 		if (est == null || !est.isConnected()) {
@@ -147,7 +152,6 @@ public class Core {
                     System.out.println(ChatColor.RED + "Attempting reconnection ...");
 
 					Core.reconnectDIThreads();
-					reconnectAttempt = false;
                 }
             }.start();
 			return;
@@ -157,13 +161,17 @@ public class Core {
 
 	public static void onEnable() {
 
+		isAboutToDisable = false;
 		config.addDefault("enable", true);
 		config.options().copyDefaults(true);
 
 	}
 
+	private static boolean isAboutToDisable = false;
+	
 	public static void onDisable() {
 
+		isAboutToDisable = true;
 		//Core.sendEvent("ServerShutdownEvent", "Plugin Disabled");
 
 		if(est != null) {
@@ -273,6 +281,8 @@ public class Core {
 	}
 
 	public static void reconnectDIThreads() {
+		if(isAboutToDisable || reconnectAttempt) return;
+		reconnectAttempt = true;
 		Collection<String> events = null;
 		if(est != null) {
 			events = est.getEventQueue();
@@ -281,6 +291,7 @@ public class Core {
 		createDIThreads();
 		if(events != null)
 			est.setEventQueue(events);
+		reconnectAttempt = false;
 	}
 
 	public static boolean isEventEnabled(String e) {
@@ -299,6 +310,10 @@ public class Core {
 		}
 	}
 
+	public static boolean isDebug() {
+		return var.getBool("discordintegration.debug.enable");
+	}
+	
 	/***
 	 * returns false if the plugin has been setup
 	 * @return

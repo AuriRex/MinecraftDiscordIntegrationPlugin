@@ -73,6 +73,10 @@ public class Variables {
     }
 
     public boolean getBool(String key) {
+    	return Boolean.valueOf(get(key));
+    }
+    
+    public boolean getBoolObject(String key) {
         Object ret = vars.get(key);
         if(ret instanceof Boolean)
             return (boolean) ret;

@@ -141,6 +141,8 @@ public class EventReceiverThread extends Thread {
         } catch (IOException ex) {
  
             System.out.println(ChatColor.RED + "[ERT] I/O error: " + ex.getMessage());
+            // Reconnect
+            Core.reconnectDIThreads();
         }
 
 

@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -51,8 +52,24 @@ public class EventSenderThread extends Thread {
 
     private Collection<String> eventList = Collections.synchronizedCollection((Queue<String>) (new LinkedList<String>()));
 
+    private boolean queueBlocker = false;
+    
     public void sendEvent(String event, String content) {
-        System.out.println("Adding to queue: " + event + ": " + content);
+    	if(Core.isDebug())
+    		System.out.println("Adding to queue: " + event + ": " + content);
+        int escapeCounter = 0;
+        while(queueBlocker && escapeCounter < 1000) {
+        	try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        	escapeCounter++;
+        }
+        if(escapeCounter >= 1000) {
+        	System.out.println("[EST] Waited one second for queue to open but it never opened. Canceling this event!");
+        	return;
+        }
         eventList.add(event + ": " + content);
     }
 
@@ -77,14 +94,14 @@ public class EventSenderThread extends Thread {
         } catch (IOException e) {
             
             //e.printStackTrace();
-            System.out.println("I/O error: " + e.getMessage());
+            System.out.println("[EST] I/O error: " + e.getMessage());
             // Reconnect
             Core.reconnectDIThreads();
         }
 
         return ret;
     }
-
+    
     public void run() {
 
         System.out.println(ChatColor.RED + "Starting EventSenderThread!");
@@ -120,18 +137,20 @@ public class EventSenderThread extends Thread {
                 }   
 
 
-            	Iterator<String> it = eventList.iterator();
+                if(!queueBlocker) {
+                	queueBlocker = true;
+                	Iterator<String> it = eventList.iterator();
 
-                while(it.hasNext()) {
-                    String send = it.next();
+                    while(it.hasNext()) {
+                        String send = it.next();
 
-                    System.out.println("Sending: " + send);
-                    sendData(send);
+                        System.out.println("Sending: " + send);
+                        sendData(send);
 
-                    it.remove();
+                        it.remove();
+                    }
+                    queueBlocker = false;
                 }
-                
-                
 
                 // if(eventList.peek() != null) {
                 //     System.out.println("Sending: " + eventList.peek());
@@ -140,18 +159,28 @@ public class EventSenderThread extends Thread {
 
             }
 
+            // TODO: Not encrypted?
             outToServer.writeBytes("ConnectionCloseEvent:" + syncname + TERMINATOR);
             outToServer.flush();
 
             socket.close();
  
+        } catch (ConcurrentModificationException ex) {
+        	
+        	System.out.println(ChatColor.DARK_RED + "[EST] FFS, IT HAPPENED AGAIN! - FIX THIS BS M8! (ConcurrentModificationException)");
+        	System.out.println("[EST] Restarting threads...");
+        	// Reconnect
+            Core.reconnectDIThreads();
+        	
         } catch (UnknownHostException ex) {
  
-            System.out.println("Server not found: " + ex.getMessage());
+            System.out.println("[EST] Server not found: " + ex.getMessage());
  
         } catch (IOException ex) {
  
-            System.out.println("I/O error: " + ex.getMessage());
+            System.out.println("[EST] I/O error: " + ex.getMessage());
+            // Reconnect
+            Core.reconnectDIThreads();
         }
 
 
